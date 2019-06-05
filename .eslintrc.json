@@ -1,0 +1,31 @@
+{
+    "parser": "@typescript-eslint/parser",
+	"plugins": ["@typescript-eslint"],
+	"env": {
+		"browser": true,
+		"es6": true
+	},
+	"globals": {
+		"Atomics": "readonly",
+		"SharedArrayBuffer": "readonly"
+	},
+	"parserOptions": {
+		"project": "./tsconfig.json",
+		"ecmaVersion": 2018,
+		"sourceType": "module"
+	},
+	"rules": {
+		"quotes": [
+			"error",
+			"double"
+		],
+		"semi": [
+			"error",
+			"always"
+		],
+		"@typescript-eslint/camelcase": "off",
+		"@typescript-eslint/ban-types": "off",
+		"@typescript-eslint/no-explicit-any":  "off"
+	},
+	"extends": ["plugin:@typescript-eslint/recommended"]
+}
