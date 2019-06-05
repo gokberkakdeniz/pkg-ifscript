@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { basename, join } from "path";
 import { spawnSync } from "child_process";
 
@@ -76,18 +78,17 @@ class Environment {
         return process.arch;
     }
 
-    public static script_shell():  Shell | string | NPMEnvironmentVariableNotFoundException {
+    public static script_shell():  Shell | string {
+        //console.log(process.env);
         let script_shell = process.env.npm_config_script_shell;
-        if (!script_shell) throw new NPMEnvironmentVariableNotFoundException("ScriptShellUndefinedError", "npm_config_script_shell", "Execution outside of package manager is not allowed.");
 
-        return basename(script_shell).replace(".exe", "");
+        return basename(script_shell).replace(".exe", "") || (this.is_windows() ? "cmd" : "sh");
     }
 
-    public static script_shell_full():  Shell | string | NPMEnvironmentVariableNotFoundException {
+    public static script_shell_full():  Shell | string {
         let script_shell = process.env.npm_config_script_shell;
-        if (!script_shell) throw new NPMEnvironmentVariableNotFoundException("ScriptShellUndefinedError", "npm_config_script_shell", "Execution outside of package manager is not allowed.");
 
-        return script_shell;
+        return script_shell || "cmd.exe";
     }
     
     public static posix_available(): boolean {
@@ -169,13 +170,14 @@ class PkgScript {
             let shFlag = "-c";
                     
             if (Environment.is_windows()) {
-                sh = process.env.comspec || "cmd";
+                sh = process.env.comspec || "cmd.exe";
                 shFlag = "/d /s /c";
             }
 
             spawnSync(sh, [shFlag, script.script], {
                 cwd: process.cwd(),
-                stdio: "inherit"
+                stdio: "inherit",
+                windowsVerbatimArguments: Environment.is_windows()
             });
             console.log("");
         });

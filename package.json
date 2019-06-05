@@ -5,11 +5,9 @@
     "main": "dist/index.js",
     "scripts": {
         "tsc": "tsc",
-        "build": "npm run tsc",
-        "start": "npm run build; node .",
         "eslint": "eslint",
-        "foo": "node .",
-        "bar": "echo $PATH"
+        "build": "npm run tsc",
+        "start": "npm run build; node ."
     },
     "repository": {
         "type": "git",
@@ -34,28 +32,7 @@
         "eslint": "^5.16.0",
         "typescript": "^3.4.5"
     },
-    "pkgscript": {
-        "posixlike": false,
-        "scripts": {
-            "foo": [
-                {
-                    "platform": ["win32", "linux"],
-                    "arch": "x64",
-                    "shell": "sh",
-                    "script": "echo 11111111111111"
-                },
-                {
-                    "platform": ["linux"],
-                    "arch": "x86",
-                    "shell": "sh",
-                    "script": "echo ssss"
-                },
-                {
-                    "platform": "linux",
-                    "shell": "sh",
-                    "script": "ps -p $fish_pid -co args --no-headers"
-                }
-            ]
-        }
+    "bin": {
+        "pkgscript": "./dist/index.js"
     }
 }
