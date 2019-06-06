@@ -34,5 +34,8 @@
     },
     "bin": {
         "pkgscript": "./dist/index.js"
+    },
+    "dependencies": {
+        "kleur": "^3.0.3"
     }
 }

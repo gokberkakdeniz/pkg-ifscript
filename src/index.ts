@@ -2,9 +2,11 @@
 
 import { basename, join } from "path";
 import { spawnSync } from "child_process";
+import { blue, yellow, cyan, bgWhite, gray, magenta } from "kleur";
+
 
 type Architecture = "arm" | "arm64" | "ia32" | "ppc" | "ppc64" | "s390" | "s390x" | "x32" | "x64";
-type Shell = "sh" | "bash" | "dash" | "zsh" | "fish" | "tcsh" | "ksh" | "mksh" | "cmd" | "ps";
+type Shell = "sh" | "bash" | "dash" | "zsh" | "fish" | "tcsh" | "ksh" | "mksh" | "cmd";
 
 const $panic = (fn: Function): any => {
     try {
@@ -25,7 +27,30 @@ const $contain = (obj: string | string[], element: any): boolean => {
     else return obj === element;
 };
 
-const $prettify = (o: any): string => `${o.os ? "os: " + o.os + "  " : ""}${o.arch ? "arch: " + o.arch + "  " : ""}${o.shell ? "shell:" + o.shell : ""}`;
+const $prettify = (name: string, script: Script): string => {
+    let result = bgWhite().black(name);
+    if (typeof script.platform === "string") {
+        result += " " + blue(script.platform);
+    } else if (Array.isArray(script.platform)) {
+        result += script.platform.reduce((r: string, i: string): string => r+" "+blue(i), "");
+    }
+
+    if (typeof script.arch === "string") {
+        result += " " + cyan(script.arch);
+    } else if (Array.isArray(script.arch)) {
+        result += script.arch.reduce((r: string, i: string): string => r+" "+cyan(i), "");
+    }
+
+    if (typeof script.shell === "string") {
+        result += " " + yellow(script.shell);
+    } else if (Array.isArray(script.arch)) {
+        result += script.shell.reduce((r: string, i: string): string => r+" "+yellow(i), "");
+    }
+
+    result += "\n> " + gray(script.script);
+
+    return result;
+};
 
 interface NPMConfigARGV {
     remain: string[];
@@ -41,7 +66,7 @@ interface PackageJSON extends JSON {
 }
 
 interface Script {
-    os?: string[] | string;
+    platform?: string[] | string;
     arch?: string[] | string;
     shell?: string[] | string;
     posixlike?: boolean;
@@ -134,15 +159,13 @@ class Package {
         const matched_scripts: Script[] = [];
         if (Array.isArray(scripts)) {
             for (let index = 0; index < scripts.length; index++) {
-                const is_unix = scripts[index].os === "unix" && Environment.is_unix();
-                const is_posixlike_toplevel = $get(this.config, "pkgscript.posixlike");
-                const is_posixlike_scriptlevel = scripts[index].posixlike;
-                const is_posixlike = is_posixlike_scriptlevel === undefined ? (is_posixlike_toplevel === undefined ? undefined : is_posixlike_toplevel) : is_posixlike_scriptlevel;
-                const platform_is_ok = $contain(scripts[index].os, current_os) || is_unix;
+                const is_unix = scripts[index].platform === "unix" && Environment.is_unix();
+                const is_posixlike = scripts[index].platform === "posixlike" && (Environment.is_unix() || Environment.is_windows_bash());
+                const platform_is_ok = $contain(scripts[index].platform, current_os) || is_unix || is_posixlike;
                 const arch_is_ok = $contain(scripts[index].arch, current_arch);
                 const shell_is_ok = $contain(scripts[index].shell, default_shell);
 
-                if (platform_is_ok && arch_is_ok && shell_is_ok && (is_posixlike === true ? Environment.is_windows_bash() : true))
+                if (platform_is_ok && arch_is_ok && shell_is_ok)
                     matched_scripts.push(scripts[index]);
             }
             return matched_scripts;
@@ -169,12 +192,12 @@ class PkgScript {
 
     private run_scripts(scripts: Script[]): any {
         scripts.forEach((script): void => {
-            console.log(`> ${this.args[1]} ${$prettify(script)}`);
-            let sh = $panic((): any => Environment.script_shell_full());
+            console.log($prettify(this.args[1], script));
+            let sh: string = $panic((): any => Environment.script_shell_full());
             let shFlag = "-c";
 
             if (Environment.is_windows()) {
-                shFlag = "/d /s /c";
+                shFlag = sh.indexOf("powershell") > -1 ? "/c" : "/d /s /c";
             }
 
             spawnSync(sh, [shFlag, script.script], {
