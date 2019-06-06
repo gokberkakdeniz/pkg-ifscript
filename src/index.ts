@@ -4,8 +4,7 @@ import { basename, join } from "path";
 import { spawnSync } from "child_process";
 
 type Architecture = "arm" | "arm64" | "ia32" | "ppc" | "ppc64" | "s390" | "s390x" | "x32" | "x64";
-type Shell = "bash" | "dash" | "zsh" | "fish" | "tcsh" | "ksh" | "mksh" | "cmd" | "ps";
-type ValidType = NodeJS.Platform | Architecture | Shell;
+type Shell = "sh" | "bash" | "dash" | "zsh" | "fish" | "tcsh" | "ksh" | "mksh" | "cmd" | "ps";
 
 const $panic = (fn: Function): any => {
     try {
@@ -134,7 +133,7 @@ class Package {
         const matched_scripts: Script[] = [];
         if (Array.isArray(scripts)) {
             for (let index = 0; index < scripts.length; index++) {
-                const platform_is_ok = $contain(scripts[index].platform, current_os);
+                const platform_is_ok = $contain(scripts[index].platform, current_os) || (scripts[index] === "unix" && ["android", "darwin", "freebsd", "linux", "openbsd", "sunos", "cygwin"].includes(current_os));
                 const arch_is_ok = $contain(scripts[index].arch, current_arch);
                 const shell_is_ok = $contain(scripts[index].shell, default_shell);
 
