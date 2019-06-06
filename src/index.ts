@@ -175,7 +175,7 @@ class Package {
     }
 }
 
-class PkgScript {
+class PkgIfScript {
     private pkg: Package;
     private args: any;
 
@@ -210,5 +210,5 @@ class PkgScript {
     }
 }
 
-const app = new PkgScript();
+const app = new PkgIfScript();
 app.launch();
