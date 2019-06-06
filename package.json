@@ -7,7 +7,7 @@
         "tsc": "tsc",
         "eslint": "eslint",
         "build": "npm run tsc",
-        "start": "npm run build; node ."
+        "start": "npm run build && node ."
     },
     "repository": {
         "type": "git",

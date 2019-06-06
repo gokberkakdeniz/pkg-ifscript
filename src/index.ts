@@ -10,22 +10,22 @@ const $panic = (fn: Function): any => {
     try {
         return fn();
     } catch (err) {
-        console.error(`${err.name}${err.env_var ? " (" + err.env_var + ")" : "" }: ${err.message}`);
+        console.error(`${err.name}${err.env_var ? " (" + err.env_var + ")" : ""}: ${err.message}`);
         process.exit(1);
     }
 };
 
-const $get = (obj: Record<string, any>, path: string): any => path.split(".").reduce((o: any, key: string ): any => o ? o[key] : undefined, obj); 
+const $get = (obj: Record<string, any>, path: string): any => path.split(".").reduce((o: any, key: string): any => o ? o[key] : undefined, obj);
 
 const $contain = (obj: string | string[], element: any): boolean => {
-    if (obj === undefined) 
+    if (obj === undefined)
         return true;
-    else if (Array.isArray(obj)) 
+    else if (Array.isArray(obj))
         return obj.includes(element);
     else return obj === element;
 };
 
-const $prettify = (o: any): string => `${o.platform ? "os: " + o.platform + "  ": ""}${o.arch ? "arch: " +  o.arch + "  ": ""}${o.shell ? "shell:" +  o.shell : ""}`;
+const $prettify = (o: any): string => `${o.os ? "os: " + o.os + "  " : ""}${o.arch ? "arch: " + o.arch + "  " : ""}${o.shell ? "shell:" + o.shell : ""}`;
 
 interface NPMConfigARGV {
     remain: string[];
@@ -37,12 +37,14 @@ interface PackageJSON extends JSON {
     readonly [Symbol.toStringTag]: string;
     readonly scripts?: JSON;
     readonly pkgscript?: JSON;
+    readonly posixlike?: boolean;
 }
 
 interface Script {
-    platform?: string[] | string;
+    os?: string[] | string;
     arch?: string[] | string;
     shell?: string[] | string;
+    posixlike?: boolean;
     script: string;
 }
 
@@ -68,30 +70,29 @@ class Environment {
     public static is_windows_bash(): boolean {
         return this.is_windows() && (/^MINGW(32|64)$/.test(process.env.MSYSTEM) || process.env.TERM === "cygwin");
     }
-    
+
     public static is_windows_shell(): boolean {
-        return  this.is_windows() && !this.is_windows_bash();
+        return this.is_windows() && !this.is_windows_bash();
     }
 
     public static arch(): Architecture | string {
         return process.arch;
     }
 
-    public static script_shell():  Shell | string {
-        //console.log(process.env);
+    public static script_shell(): Shell | string {
         let script_shell = process.env.npm_config_script_shell;
 
         return basename(script_shell).replace(".exe", "") || (this.is_windows() ? "cmd" : "sh");
     }
 
-    public static script_shell_full():  Shell | string {
+    public static script_shell_full(): Shell | string {
         let script_shell = process.env.npm_config_script_shell;
-
-        return script_shell || "cmd.exe";
+        return script_shell || (this.is_windows() ? (process.env.comspec || "cmd.exe") : "sh");
     }
-    
-    public static posix_available(): boolean {
-        return (this.os() !== "win32") || ((process.env.SHELL || process.env.TERM) !== undefined);
+
+
+    public static is_unix(): boolean {
+        return ["android", "darwin", "freebsd", "linux", "openbsd", "sunos"].includes(this.os());
     }
 
     public static argv(): string[] | NPMEnvironmentVariableNotFoundException {
@@ -123,7 +124,7 @@ class Package {
     }
 
     public available_scripts(arg: string): Script[] | Error {
-        const scripts =  $get(this.config, `pkgscript.scripts.${arg}`);
+        const scripts: Script[] = $get(this.config, `pkgscript.scripts.${arg}`);
         if (scripts === undefined) throw new Error(`No script defined for ${arg}`);
 
         const current_os = Environment.os();
@@ -133,11 +134,15 @@ class Package {
         const matched_scripts: Script[] = [];
         if (Array.isArray(scripts)) {
             for (let index = 0; index < scripts.length; index++) {
-                const platform_is_ok = $contain(scripts[index].platform, current_os) || (scripts[index] === "unix" && ["android", "darwin", "freebsd", "linux", "openbsd", "sunos", "cygwin"].includes(current_os));
+                const is_unix = scripts[index].os === "unix" && Environment.is_unix();
+                const is_posixlike_toplevel = $get(this.config, "pkgscript.posixlike");
+                const is_posixlike_scriptlevel = scripts[index].posixlike;
+                const is_posixlike = is_posixlike_scriptlevel === undefined ? (is_posixlike_toplevel === undefined ? undefined : is_posixlike_toplevel) : is_posixlike_scriptlevel;
+                const platform_is_ok = $contain(scripts[index].os, current_os) || is_unix;
                 const arch_is_ok = $contain(scripts[index].arch, current_arch);
                 const shell_is_ok = $contain(scripts[index].shell, default_shell);
 
-                if (platform_is_ok && arch_is_ok && shell_is_ok)
+                if (platform_is_ok && arch_is_ok && shell_is_ok && (is_posixlike === true ? Environment.is_windows_bash() : true))
                     matched_scripts.push(scripts[index]);
             }
             return matched_scripts;
@@ -153,23 +158,22 @@ class PkgScript {
 
     public constructor() {
         this.pkg = new Package();
-        this.args = $panic(Environment.argv);
+        this.args = $panic((): any => Environment.argv());
     }
 
     public launch(): void {
         const script_name = this.args[1];
-        const scripts: Script[] = $panic(this.pkg.available_scripts.bind(this.pkg, [script_name]));
+        const scripts: Script[] = $panic((): any => this.pkg.available_scripts(script_name));
         this.run_scripts(scripts);
     }
 
     private run_scripts(scripts: Script[]): any {
         scripts.forEach((script): void => {
             console.log(`> ${this.args[1]} ${$prettify(script)}`);
-            let sh = $panic(Environment.script_shell_full);
+            let sh = $panic((): any => Environment.script_shell_full());
             let shFlag = "-c";
-                    
+
             if (Environment.is_windows()) {
-                sh = process.env.comspec || "cmd.exe";
                 shFlag = "/d /s /c";
             }
 
