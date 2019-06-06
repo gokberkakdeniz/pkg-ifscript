@@ -1,5 +1,5 @@
 {
-    "name": "pkgscript",
+    "name": "pkg-ifscript",
     "version": "1.0.0",
     "description": "package.json scripts extended",
     "main": "dist/index.js",
