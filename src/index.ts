@@ -2,7 +2,7 @@
 
 import { basename, join } from "path";
 import { spawnSync } from "child_process";
-import { blue, yellow, cyan, bgWhite, gray, magenta } from "kleur";
+import { blue, yellow, cyan, bgWhite, gray } from "kleur";
 
 
 type Architecture = "arm" | "arm64" | "ia32" | "ppc" | "ppc64" | "s390" | "s390x" | "x32" | "x64";
