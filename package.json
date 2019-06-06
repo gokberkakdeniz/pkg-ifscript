@@ -33,7 +33,7 @@
         "typescript": "^3.4.5"
     },
     "bin": {
-        "pkgscript": "./dist/index.js"
+        "pkgs-ifcript": "./dist/index.js"
     },
     "dependencies": {
         "kleur": "^3.0.3"
