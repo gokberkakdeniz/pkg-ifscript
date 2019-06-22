@@ -61,15 +61,13 @@ interface NPMConfigARGV {
 interface PackageJSON extends JSON {
     readonly [Symbol.toStringTag]: string;
     readonly scripts?: JSON;
-    readonly pkgscript?: JSON;
-    readonly posixlike?: boolean;
+    readonly "pkg-ifscript"?: JSON;
 }
 
 interface Script {
     platform?: string[] | string;
     arch?: string[] | string;
     shell?: string[] | string;
-    posixlike?: boolean;
     script: string;
 }
 
@@ -132,24 +130,13 @@ class Environment {
 
 class Package {
     private config: PackageJSON;
-    private posixlike: boolean;
 
     public constructor() {
         this.config = require(join(process.cwd(), "package.json"));
-        this.posixlike = this.get_pkgscipt_posixlike();
-    }
-
-    private get_pkgscipt_posixlike(): boolean {
-        let isposixlike = $get(this.config, "pkgscript.posixlike");
-        return isposixlike !== undefined;
-    }
-
-    public is_posixlike(): boolean {
-        return this.posixlike;
     }
 
     public available_scripts(arg: string): Script[] | Error {
-        const scripts: Script[] = $get(this.config, `pkgscript.scripts.${arg}`);
+        const scripts: Script[] = $get(this.config, `pkg-ifscript.${arg}`);
         if (scripts === undefined) throw new Error(`No script defined for ${arg}`);
 
         const current_os = Environment.os();
