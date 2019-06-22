@@ -1,5 +1,5 @@
 {
-    "name": "pkgscript",
+    "name": "pkg-ifscript",
     "version": "1.0.0",
     "description": "package.json scripts extended",
     "main": "dist/index.js",
@@ -11,7 +11,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/tncga/pkgscript.git"
+        "url": "git+https://github.com/tncga/pkg-ifscript.git"
     },
     "keywords": [
         "npm",
@@ -22,9 +22,9 @@
     "author": "tncga",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/tncga/pkgscript/issues"
+        "url": "https://github.com/tncga/pkg-ifscript/issues"
     },
-    "homepage": "https://github.com/tncga/pkgscript#readme",
+    "homepage": "https://github.com/tncga/pkg-ifscript#readme",
     "devDependencies": {
         "@types/node": "^12.0.4",
         "@typescript-eslint/eslint-plugin": "^1.9.0",
