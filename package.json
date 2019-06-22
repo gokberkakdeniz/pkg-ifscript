@@ -1,6 +1,6 @@
 {
     "name": "pkg-ifscript",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "package.json scripts extended",
     "main": "dist/index.js",
     "scripts": {
