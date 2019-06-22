@@ -4,6 +4,7 @@ Run conditional package scripts
 ![terminal](https://i.ibb.co/MSCMDpT/image.png)
 
 > Yarn and npm are supported.
+> Prefixes are not supported (now).
 
 ## Documentation
 ### Conditions
