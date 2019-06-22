@@ -7,7 +7,7 @@
         "tsc": "tsc",
         "eslint": "eslint",
         "build": "npm run tsc",
-        "start": "npm run build; node ."
+        "start": "npm run build && node ."
     },
     "repository": {
         "type": "git",
@@ -33,6 +33,9 @@
         "typescript": "^3.4.5"
     },
     "bin": {
-        "pkgscript": "./dist/index.js"
+        "pkgs-ifcript": "./dist/index.js"
+    },
+    "dependencies": {
+        "kleur": "^3.0.3"
     }
 }
