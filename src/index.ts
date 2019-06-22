@@ -2,8 +2,7 @@
 
 import { basename, join } from "path";
 import { spawnSync } from "child_process";
-import { blue, yellow, cyan, bgWhite, dim, gray } from "kleur";
-
+import { blue, yellow, cyan, bgWhite, dim, gray, red } from "kleur";
 
 type Architecture = "arm" | "arm64" | "ia32" | "ppc" | "ppc64" | "s390" | "s390x" | "x32" | "x64";
 type Shell = "sh" | "bash" | "dash" | "zsh" | "fish" | "tcsh" | "ksh" | "mksh" | "cmd" | "powershell";
@@ -203,22 +202,25 @@ class PkgIfScript {
     }
 
     private run_scripts(scripts: Script[]): any {
-        scripts.forEach((script): void => {
-            console.log($prettify(this.args, script));
-            let sh: string = $panic((): any => Environment.script_shell_full());
-            let shFlag = "-c";
+        if (scripts.length == 0) 
+            console.error(red("No script found for this system."));
+        else
+            scripts.forEach((script): void => {
+                console.log($prettify(this.args, script));
+                let sh: string = $panic((): any => Environment.script_shell_full());
+                let shFlag = "-c";
 
-            if (Environment.is_windows()) {
-                shFlag = sh.indexOf("powershell") > -1 ? "/c" : "/d /s /c";
-            }
+                if (Environment.is_windows()) {
+                    shFlag = sh.indexOf("powershell") > -1 ? "/c" : "/d /s /c";
+                }
 
-            spawnSync(sh, [shFlag, script.script], {
-                cwd: process.cwd(),
-                stdio: "inherit",
-                windowsVerbatimArguments: Environment.is_windows()
+                spawnSync(sh, [shFlag, script.script], {
+                    cwd: process.cwd(),
+                    stdio: "inherit",
+                    windowsVerbatimArguments: Environment.is_windows()
+                });
+                console.log("");
             });
-            console.log("");
-        });
     }
 }
 
