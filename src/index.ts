@@ -2,7 +2,7 @@
 
 import { basename, join } from "path";
 import { spawnSync } from "child_process";
-import { blue, yellow, cyan, bgWhite, gray } from "kleur";
+import { blue, yellow, cyan, bgWhite, dim, gray } from "kleur";
 
 
 type Architecture = "arm" | "arm64" | "ia32" | "ppc" | "ppc64" | "s390" | "s390x" | "x32" | "x64";
@@ -46,6 +46,12 @@ const $prettify = (name: string, script: Script): string => {
     } else if (Array.isArray(script.arch)) {
         result += script.shell.reduce((r: string, i: string): string => r+" "+yellow(i), "");
     }
+    if (script.env) {
+        for (const key of Reflect.ownKeys(script.env)) {
+            const value = Reflect.get(script.env, key);
+            result += " " + dim(key as String + "=" + value);
+        }
+    }
 
     result += "\n> " + gray(script.script);
 
@@ -68,6 +74,7 @@ interface Script {
     platform?: string[] | string;
     arch?: string[] | string;
     shell?: string[] | string;
+    env?: string[];
     script: string;
 }
 
@@ -151,8 +158,19 @@ class Package {
                 const platform_is_ok = $contain(scripts[index].platform, current_os) || is_unix || is_posixlike;
                 const arch_is_ok = $contain(scripts[index].arch, current_arch);
                 const shell_is_ok = $contain(scripts[index].shell, default_shell);
+                
+                const envs = scripts[index].env;
+                let env_is_ok = true;
+                if (envs) {
+                    for (const key of Reflect.ownKeys(envs)) {
+                        if (Reflect.get(process.env, key) != Reflect.get(envs, key)) {
+                            env_is_ok = false;
+                            break;
+                        }
+                    }
+                }
 
-                if (platform_is_ok && arch_is_ok && shell_is_ok)
+                if (platform_is_ok && arch_is_ok && shell_is_ok && env_is_ok)
                     matched_scripts.push(scripts[index]);
             }
             return matched_scripts;
