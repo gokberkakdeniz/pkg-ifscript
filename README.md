@@ -1,6 +1,9 @@
 # pkg-ifscript 
 Run conditional package scripts
-[![asciicast](https://asciinema.org/a/fhSyvUrM3d3Woy6LgAjHhM2Ed.svg)](https://asciinema.org/a/fhSyvUrM3d3Woy6LgAjHhM2Ed)
+
+![terminal](https://i.ibb.co/MSCMDpT/image.png)
+
+> Yarn and npm are supported.
 
 ## Documentation
 ### Conditions
@@ -25,7 +28,7 @@ Specifies operating system.
 
 #### Architecture (arch)
 Specifies CPU architecture. 
-#### Type
+##### Type
 `String` or `String Array`.
 ##### Values
 - arm
@@ -38,12 +41,35 @@ Specifies CPU architecture.
 - x32
 - x64
 
+#### Shell (shell)
+Specifies default shell. Only base name is used. For example:
+    
+    $ npm config get script-shell
+    /usr/bin/sh
+
+The value is `sh`.
+##### Type
+`String` or `String Array`.
+##### Values
+- sh
+- bash
+- dash
+- zsh
+- fish
+- tcsh
+- ksh
+- mksh
+- cmd
+- powershell
+
+and others...
+
 #### Environment (env)
 Specifies environment variables.
 ##### Type
 `Object`
 
-### Example
+## Example
 *package.json*
 
     {

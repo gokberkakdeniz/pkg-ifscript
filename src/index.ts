@@ -6,7 +6,7 @@ import { blue, yellow, cyan, bgWhite, dim, gray } from "kleur";
 
 
 type Architecture = "arm" | "arm64" | "ia32" | "ppc" | "ppc64" | "s390" | "s390x" | "x32" | "x64";
-type Shell = "sh" | "bash" | "dash" | "zsh" | "fish" | "tcsh" | "ksh" | "mksh" | "cmd";
+type Shell = "sh" | "bash" | "dash" | "zsh" | "fish" | "tcsh" | "ksh" | "mksh" | "cmd" | "powershell";
 
 const $panic = (fn: Function): any => {
     try {
