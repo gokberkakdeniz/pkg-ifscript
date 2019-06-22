@@ -126,12 +126,19 @@ class Environment {
     }
 
     public static argv(): string[] | NPMEnvironmentVariableNotFoundException {
-        if (!process.env.npm_config_argv) throw new NPMEnvironmentVariableNotFoundException("ArgumentsNotFoundError", "npm_config_argv", "Execution from outside of package manager is not allowed.");
+        if (!process.env.npm_config_argv) 
+            throw new NPMEnvironmentVariableNotFoundException("ArgumentsNotFoundError", "npm_config_argv", "Execution from outside of package manager is not allowed.");
 
         const argv: NPMConfigARGV = JSON.parse(process.env.npm_config_argv);
         if (argv.cooked[0] !== "run" && argv.cooked[0] !== "run-script") argv.cooked.unshift("run");
 
         return argv.cooked;
+    }
+
+    public static lifecycle_event(): string | NPMEnvironmentVariableNotFoundException {
+        if (!process.env.npm_lifecycle_event)
+            throw new NPMEnvironmentVariableNotFoundException("ArgumentsNotFoundError", "npm_lifecycle_event", "Execution from outside of package manager is not allowed.");
+        return process.env.npm_lifecycle_event;
     }
 }
 
@@ -186,18 +193,18 @@ class PkgIfScript {
 
     public constructor() {
         this.pkg = new Package();
-        this.args = $panic((): any => Environment.argv());
+        this.args = $panic((): any => Environment.lifecycle_event());
     }
 
     public launch(): void {
-        const script_name = this.args[1];
+        const script_name = this.args;
         const scripts: Script[] = $panic((): any => this.pkg.available_scripts(script_name));
         this.run_scripts(scripts);
     }
 
     private run_scripts(scripts: Script[]): any {
         scripts.forEach((script): void => {
-            console.log($prettify(this.args[1], script));
+            console.log($prettify(this.args, script));
             let sh: string = $panic((): any => Environment.script_shell_full());
             let shFlag = "-c";
 
